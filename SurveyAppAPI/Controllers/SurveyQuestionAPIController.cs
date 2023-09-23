@@ -4,73 +4,88 @@ using SurveyAppAPI.Models;
 
 namespace SurveyAppAPI.Controllers
 {
-    [Route("api/v1/survey")]
+    [Route("api/v1/survey/question")]
     [ApiController]
-    public class SurveyAPIController : ControllerBase
+    public class SurveyQuestionAPIController : ControllerBase
     {
+        private readonly ApplicationDbContext _db;
+
+        public SurveyQuestionAPIController(ApplicationDbContext db)
+        {
+            _db = db;
+        }
+
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public ActionResult<IEnumerable<SurveyQuestions>> GetSurveys()
+        public ActionResult<IEnumerable<SurveyQuestions>> GetSurveyQuestions()
         {
-            return Ok(SurveyQuestionsStore.surveyQuestionList);
+            return Ok(_db.SurveyQuestions.ToList());
         }
 
-        [HttpGet("{id:int}", Name = "GetSurvey")]
+        [HttpGet("{id:int}", Name = "GetSurveyQuestion")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public ActionResult<SurveyQuestions> GetSurvey(int id)
+        public ActionResult<SurveyQuestions> GetSurveyQuestion(int id)
         {
-            var data = SurveyQuestionsStore.surveyQuestionList.FirstOrDefault(u => u.ID == id);
+            var data = _db.SurveyQuestions.FirstOrDefault(u => u.ID == id);
             if(data == null)
                 return NotFound();
 
             return Ok(data);
         }
 
-        [HttpPost]
+        [HttpPost(Name = "CreateSurveyQuestion")]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public ActionResult<SurveyQuestions> CreateSurvey([FromBody]SurveyQuestions surveyQuestion) 
+        public ActionResult<SurveyQuestions> CreateSurveyQuestion([FromBody]SurveyQuestions surveyQuestion) 
         {
             if (surveyQuestion == null)
                 return BadRequest();
 
-            surveyQuestion.ID = SurveyQuestionsStore.surveyQuestionList.OrderByDescending(u => u.ID).FirstOrDefault().ID + 1;
-            SurveyQuestionsStore.surveyQuestionList.Add(surveyQuestion);   
+            SurveyQuestions model = new()
+            {
+                Question = surveyQuestion.Question
+            };
+            _db.SurveyQuestions.Add(model);
+            _db.SaveChanges();
 
-            return CreatedAtRoute("GetSurvey", new { id = surveyQuestion.ID }, surveyQuestion);
+            return CreatedAtRoute("GetSurveyQuestion", new { id = surveyQuestion.ID }, surveyQuestion);
         }
 
-        [HttpDelete("{id:int}", Name = "DeleteSurvey")]
+        [HttpDelete("{id:int}", Name = "DeleteSurveyQuestion")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public IActionResult DeleteSurvey(int id)
+        public IActionResult DeleteSurveyQuestion(int id)
         {
-            var data = SurveyQuestionsStore.surveyQuestionList.FirstOrDefault(u => u.ID == id);
+            var data = _db.SurveyQuestions.FirstOrDefault(u => u.ID == id);
             if (data == null)
                 return NotFound();
 
-            SurveyQuestionsStore.surveyQuestionList.Remove(data);
+            _db.SurveyQuestions.Remove(data);
+            _db.SaveChanges();
 
             return NoContent();
         }
 
-        [HttpPut("{id:int}", Name = "UpdateSurvey")]
+        [HttpPut("{id:int}", Name = "UpdateSurveyQuestion")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public IActionResult UpdateSurvey(int id, [FromBody]SurveyQuestions surveyQuestion)
+        public IActionResult UpdateSurveyQuestion(int id, [FromBody]SurveyQuestions surveyQuestion)
         {
-            var data = SurveyQuestionsStore.surveyQuestionList.FirstOrDefault(u => u.ID == id);
+            var data = _db.SurveyQuestions.FirstOrDefault(u => u.ID == id);
             if (data == null)
                 return NotFound();
 
             data.Question = surveyQuestion.Question;
+            
+            _db.SurveyQuestions.Update(data);
+            _db.SaveChanges();
 
             return NoContent();
         }

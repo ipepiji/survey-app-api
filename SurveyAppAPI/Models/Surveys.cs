@@ -3,13 +3,12 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace SurveyAppAPI.Models
 {
-    public class SurveyQuestions
+    public class Surveys
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int ID { get; set; }
         [Required]
-        [MaxLength(100)]
-        public string Question { get; set; }
+        public DateTime SubmitTime { get; set; }
     }
 }

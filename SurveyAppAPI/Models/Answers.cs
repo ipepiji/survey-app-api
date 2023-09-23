@@ -1,15 +1,16 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 
 namespace SurveyAppAPI.Models
 {
-    public class SurveyQuestions
+    public class Answers
     {
-        [Key]
-        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int ID { get; set; }
         [Required]
         [MaxLength(100)]
         public string Question { get; set; }
+        [Required]
+        [MaxLength(100)]
+        public string Answer { get; set; }
+        public DateTime SubmitTime { get; set; }
     }
 }
